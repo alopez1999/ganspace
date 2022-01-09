@@ -290,6 +290,7 @@ def compute(config, dump_name, instrumented_model):
         X = X.reshape(-1, sample_dims)
         X -= X_global_mean
 
+    # Extracting components for storage
     X_comp, X_stdev, X_var_ratio = transformer.get_components()
     
     assert X_comp.shape[1] == sample_dims \
@@ -396,6 +397,7 @@ def _compute(submit_config, config, model=None, force_recompute=False):
     if not dump_path.is_file() or force_recompute:
         print('Not cached')
         t_start = datetime.datetime.now()
+        # Important step that actually computes the feature transformation
         compute(config, dump_path, model)
         print('Total time:', datetime.datetime.now() - t_start)
     
