@@ -54,7 +54,7 @@ def load_components(class_name, inst):
     global components, state, use_named_latents
 
     config = args.from_dict({ 'output_class': class_name })
-    dump_name = get_or_compute(config, inst)
+    dump_name = get_or_compute(config, inst, force_recompute=True)
     data = np.load(dump_name, allow_pickle=False)
     X_comp = data['act_comp']
     X_mean = data['act_mean']
@@ -319,7 +319,7 @@ def setup_ui():
     
     # Get new latent or new components
     tk.Button(toolbar, text="Resample latent", command=partial(resample_latent, None, False)).pack(anchor=tk.CENTER, fill=tk.X, padx=4, pady=4)
-    #tk.Button(toolbar, text="Recompute", command=recompute_components).pack(anchor=tk.CENTER, fill=tk.X)
+    # tk.Button(toolbar, text="Recompute", command=recompute_components).pack(anchor=tk.CENTER, fill=tk.X)
 
 # App state
 state = SimpleNamespace(

@@ -203,6 +203,43 @@ class SPCAEstimator():
         var_ratio = self.stdev**2 / self.total_var
         return self.transformer.components_, self.stdev, var_ratio # SPCA outputs are normalized
 
+# Non-linear PCA
+class KernelPCAEstimator():
+    def __init__(self, n_components):
+        self.n_components = n_components
+        self.solver = 'auto'
+        self.transformer = KernelPCA(n_components, kernel='linear', eigen_solver=self.solver)
+        self.batch_support = False
+
+    def get_param_str(self):
+        return f"kpca-{self.solver}_c{self.n_components}"
+
+    def fit(self, X):
+        self.transformer.fit(X.T)
+
+        # Save variance for later
+        self.total_var = X.var(axis=0).sum()
+
+        # Compute projected standard deviations
+        self.stdev = np.dot(self.transformer.eigenvectors_.T, X.T).std(axis=1)
+
+        # Sort components based on explained variance
+        idx = np.argsort(self.stdev)[::-1]
+        self.stdev = self.stdev[idx]
+        self.transformer.eigenvectors_[:, :] = self.transformer.eigenvectors_[:, idx]
+
+        # Check orthogonality
+        dotps = [np.dot(*self.transformer.eigenvectors_[[i, j]])
+            for (i, j) in itertools.combinations(range(self.n_components), 2)]
+        if not np.allclose(dotps, 0, atol=1e-4):
+            print('PCA components not orghogonal, max dot', np.abs(dotps).max())
+
+        self.transformer.mean_ = X.mean(axis=0, keepdims=True)
+
+    def get_components(self):
+        var_ratio = self.stdev**2 / self.total_var
+        return self.transformer.eigenvectors_.T, self.stdev, var_ratio
+
 def get_estimator(name, n_components, alpha):
     if name == 'pca':
         return PCAEstimator(n_components)
@@ -214,5 +251,7 @@ def get_estimator(name, n_components, alpha):
         return ICAEstimator(n_components)
     elif name == 'spca':
         return SPCAEstimator(n_components, alpha)
+    elif name == 'kpca':
+        return KernelPCAEstimator(n_components)
     else:
         raise RuntimeError('Unknown estimator')
