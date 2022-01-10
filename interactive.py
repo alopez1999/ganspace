@@ -51,10 +51,17 @@ def get_edit_name(idx, s, e, name=None):
 
 # Load or compute PCA basis vectors
 def load_components(class_name, inst):
-    global components, state, use_named_latents
+    global components, state, use_named_latents, kernel_transformer
 
+    kernel_transformer = None
     config = args.from_dict({ 'output_class': class_name })
-    dump_name = get_or_compute(config, inst, force_recompute=True)
+
+    if config.estimator == 'kpca':
+        dump_name, kernel_transformer = get_or_compute(config,inst, force_recompute=True)
+        print('Computed kernel transformer ', kernel_transformer.kernel)
+    else:
+        dump_name = get_or_compute(config, inst, force_recompute=True)
+
     data = np.load(dump_name, allow_pickle=False)
     X_comp = data['act_comp']
     X_mean = data['act_mean']
@@ -78,13 +85,13 @@ def load_components(class_name, inst):
         latent_types = [model.latent_space_name()]*n_comp,
         ranges = [(0, model.get_max_latents())]*n_comp,
     )
-    
+
     state.component_class = class_name # invalidates cache
     use_named_latents = False
     print('Loaded components for', class_name, 'from', dump_name)
 
 # Load previously exported named components from
-# directory specified with '--inputs=path/to/comp'
+# directory specified with '--inputs=path/to/comp' (not supported with kernelPCA)
 def load_named_components(path, class_name):
     global components, state, use_named_latents
 
@@ -147,7 +154,7 @@ def setup_model():
     sample_dims = np.prod(feat_shape)
 
     # Initialize 
-    if args.inputs:
+    if args.inputs: # Not supported with kernelPCA
         load_named_components(args.inputs, class_name)
     else:
         load_components(class_name, inst)
@@ -420,7 +427,32 @@ def on_draw():
     latent_start = ui_state.edit_layer_start.get()
     latent_end = ui_state.edit_layer_end.get() + 1 # save as exclusive, show as inclusive
 
-    if cache.update(coords=slider_vals, comp=state.component_class, mode=mode, z=state.z, s=latent_start, e=latent_end):
+    update_ui = cache.update(coords=slider_vals, comp=state.component_class,
+                             mode=mode, z=state.z, s=latent_start, e=latent_end)
+
+    if update_ui and not (kernel_transformer is None):
+        deltas = kernel_transformer.inverse_transform(slider_vals.reshape(1,-1))
+        with torch.no_grad():
+            z_base = state.z - state.lat_slider_offset
+            z_deltas = [0.0]*model.get_max_latents()
+            z_delta_global = 0.0
+
+            n_comp = slider_vals.size
+            act_deltas = {}
+
+            if torch.is_tensor(state.act_slider_offset):
+                act_deltas[layer_name] = -state.act_slider_offset
+
+            for space in components.latent_types:
+                assert space == model.latent_space_name(), \
+                    'Cannot mix latent spaces (for now)'
+
+            # Single or multiple offsets?
+            z_delta_global = z_delta_global + deltas
+            z_final = z_base + torch.from_numpy(z_delta_global).to('cuda:0')
+            img = model.forward(z_final).clamp(0.0, 1.0)
+
+    elif update_ui:
         with torch.no_grad():
             z_base = state.z - state.lat_slider_offset
             z_deltas = [0.0]*model.get_max_latents()

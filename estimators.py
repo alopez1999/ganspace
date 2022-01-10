@@ -215,26 +215,28 @@ class KernelPCAEstimator():
     def __init__(self, n_components):
         self.n_components = n_components
         self.solver = 'auto'
-        self.kernel = 'poly'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
-        self.transformer = KernelPCA(n_components, kernel=self.kernel, eigen_solver=self.solver)
+        self.kernel = 'sigmoid'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
+        self.transformer = KernelPCA(n_components, kernel=self.kernel,
+                                     eigen_solver=self.solver, fit_inverse_transform=True)
         self.batch_support = False
 
     def get_param_str(self):
         return f"kpca-{self.solver}_c{self.n_components}"
 
     def fit(self, X):
-        self.transformer.fit(X.T)
+        self.transformer.fit(X)
 
         # Save variance for later
         self.total_var = X.var(axis=0).sum()
 
         # Compute projected standard deviations
-        self.stdev = np.dot(self.transformer.eigenvectors_.T, X.T).std(axis=1)
+        self.stdev = np.dot(self.transformer.eigenvectors_.T, X).std(axis=1)
 
         # Sort components based on explained variance
         idx = np.argsort(self.stdev)[::-1]
         self.stdev = self.stdev[idx]
-        self.transformer.eigenvectors_[:, :] = self.transformer.eigenvectors_[:, idx]
+        #self.transformer.eigenvectors_[:, :] = self.transformer.eigenvectors_[:, idx]
+        self.components = np.zeros((self.n_components, X.shape[1]))
 
         # Check orthogonality
         dotps = [np.dot(*self.transformer.eigenvectors_[[i, j]])
@@ -246,7 +248,10 @@ class KernelPCAEstimator():
 
     def get_components(self):
         var_ratio = self.stdev ** 2 / self.total_var
-        return self.transformer.eigenvectors_.T, self.stdev, var_ratio
+        return self.components, self.stdev, var_ratio
+
+    def get_transformer(self):
+        return self.transformer
 
 
 def get_estimator(name, n_components, alpha):

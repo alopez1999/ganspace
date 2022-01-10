@@ -292,7 +292,7 @@ def compute(config, dump_name, instrumented_model):
 
     # Extracting components for storage
     X_comp, X_stdev, X_var_ratio = transformer.get_components()
-    
+
     assert X_comp.shape[1] == sample_dims \
         and X_comp.shape[0] == config.components \
         and X_global_mean.shape[1] == sample_dims \
@@ -358,6 +358,11 @@ def compute(config, dump_name, instrumented_model):
     del latents
     torch.cuda.empty_cache()
 
+    # If using kernelPCA return the full transformer
+    if config.estimator == 'kpca':
+        # Extracting components for storage
+        return transformer.get_transformer()
+
 # Return cached results or commpute if needed
 # Pass existing InstrumentedModel instance to reuse it
 def get_or_compute(config, model=None, submit_config=None, force_recompute=False):
@@ -398,6 +403,9 @@ def _compute(submit_config, config, model=None, force_recompute=False):
         print('Not cached')
         t_start = datetime.datetime.now()
         # Important step that actually computes the feature transformation
+        if config.estimator == 'kpca':
+            # Return kernel transformator directly (sloppy but life is life)
+            return dump_path, compute(config, dump_path, model)
         compute(config, dump_path, model)
         print('Total time:', datetime.datetime.now() - t_start)
     
