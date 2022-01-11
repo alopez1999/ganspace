@@ -54,7 +54,7 @@ def load_components(class_name, inst):
     global components, state, use_named_latents
 
     config = args.from_dict({ 'output_class': class_name })
-    dump_name = get_or_compute(config, inst)
+    dump_name = get_or_compute(config, inst, force_recompute=True)
     data = np.load(dump_name, allow_pickle=False)
     X_comp = data['act_comp']
     X_mean = data['act_mean']
