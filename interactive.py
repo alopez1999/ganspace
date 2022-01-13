@@ -431,7 +431,13 @@ def on_draw():
                              mode=mode, z=state.z, s=latent_start, e=latent_end)
 
     if update_ui and not (kernel_transformer is None):
-        deltas = kernel_transformer.inverse_transform(slider_vals.reshape(1,-1))
+
+        deltas = torch.from_numpy(kernel_transformer.inverse_transform(slider_vals.reshape(1,-1))).to('cuda:0')
+
+        # No modification if no change in sliders
+        if np.all(slider_vals == 0):
+            deltas = deltas*0
+
         with torch.no_grad():
             z_base = state.z - state.lat_slider_offset
             z_deltas = [0.0]*model.get_max_latents()
@@ -447,9 +453,24 @@ def on_draw():
                 assert space == model.latent_space_name(), \
                     'Cannot mix latent spaces (for now)'
 
+            edit_range = (latent_start, latent_end)
+            full_range = (edit_range == (0, model.get_max_latents()))
+
+            if full_range:
+                z_delta_global = z_delta_global + deltas
+            else:
+                for l in range(*edit_range):
+                    z_deltas[l] = z_deltas[l] + deltas
+
+            # Evaluate
+            has_offsets = any(torch.is_tensor(t) for t in z_deltas)
+            z_final = apply_edit(z_base, z_delta_global)
+            if has_offsets:
+                z_final = [apply_edit(z_final, d) for d in z_deltas]
+
+            img = model.forward(z_final).clamp(0.0, 1.0)
+
             # Single or multiple offsets?
-            z_delta_global = z_delta_global + deltas
-            z_final = z_base + torch.from_numpy(z_delta_global).to('cuda:0')
             img = model.forward(z_final).clamp(0.0, 1.0)
 
     elif update_ui:

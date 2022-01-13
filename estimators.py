@@ -215,7 +215,7 @@ class KernelPCAEstimator():
     def __init__(self, n_components):
         self.n_components = n_components
         self.solver = 'auto'
-        self.kernel = 'sigmoid'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
+        self.kernel = 'rbf'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
         self.transformer = KernelPCA(n_components, kernel=self.kernel,
                                      eigen_solver=self.solver, fit_inverse_transform=True)
         self.batch_support = False
