@@ -1,13 +1,3 @@
-# Copyright 2020 Erik Härkönen. All rights reserved.
-# This file is licensed to you under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License. You may obtain a copy
-# of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software distributed under
-# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-# OF ANY KIND, either express or implied. See the License for the specific language
-# governing permissions and limitations under the License.
-
 from sklearn.decomposition import FastICA, PCA, IncrementalPCA, MiniBatchSparsePCA, SparsePCA, KernelPCA
 import fbpca
 import numpy as np
@@ -215,7 +205,7 @@ class KernelPCAEstimator():
     def __init__(self, n_components):
         self.n_components = n_components
         self.solver = 'auto'
-        self.kernel = 'rbf'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
+        self.kernel = 'sigmoid'  # 'rbf', 'poly', 'linear', 'sigmoid', 'cosine'
         self.transformer = KernelPCA(n_components, kernel=self.kernel,
                                      eigen_solver=self.solver, fit_inverse_transform=True)
         self.batch_support = False

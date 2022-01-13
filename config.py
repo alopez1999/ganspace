@@ -1,13 +1,3 @@
-# Copyright 2020 Erik Härkönen. All rights reserved.
-# This file is licensed to you under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License. You may obtain a copy
-# of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software distributed under
-# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-# OF ANY KIND, either express or implied. See the License for the specific language
-# governing permissions and limitations under the License.
-
 import sys
 import argparse
 import json
@@ -56,7 +46,7 @@ class Config:
         parser.add_argument('--model', dest='model', type=str, default='StyleGAN', help='The network to analyze') # StyleGAN, DCGAN, ProGAN, BigGAN-XYZ
         parser.add_argument('--layer', dest='layer', type=str, default='g_mapping', help='The layer to analyze')
         parser.add_argument('--class', dest='output_class', type=str, default=None, help='Output class to generate (BigGAN: Imagenet, ProGAN: LSUN)')
-        parser.add_argument('--est', dest='estimator', type=str, default='ipca', help='The algorithm to use [pca, fbpca, cupca, spca, ica]')
+        parser.add_argument('--est', dest='estimator', type=str, default='ipca', help='The algorithm to use [pca, fbpca, cupca, spca, ica, kpca]')
         parser.add_argument('--sparsity', type=float, default=1.0, help='Sparsity parameter of SPCA')
         parser.add_argument('--video', dest='make_video', action='store_true', help='Generate output videos (MP4s)')
         parser.add_argument('--batch', dest='batch_mode', action='store_true', help="Don't open windows, instead save results to file")
