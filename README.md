@@ -20,7 +20,7 @@ To generate the dataset used to train the autoencoder, uncomment line 230 in "de
 ```
 python interactive.py --model=StyleGAN2 --est=ipca --class=ffhq --layer=style --use_w -n=1_000_000 -b=10_000
 ```
-To train, go to /autoencoder and run the train.py file. Hyperparameter configuration is set in the first lines of the file. sCheckpoints for normalized and non normalized models are located in the same folder.
+To train, go to /autoencoder and run the train.py file. Hyperparameter configuration is set in the first lines of the file. Checkpoints for normalized and non normalized models are located in the same folder.
 
 ### StyleGAN
 1. Install TensorFlow: `conda install tensorflow-gpu=1.*`.
