@@ -26,7 +26,7 @@ In order to change the specific kernel used by the PCA, please go to "estimators
 3. Modify methods `__init__()`, `download_checkpoint()` in `models/wrappers.py` under class StyleGAN2.
 
 ### Base code
-The majority of the base code is directly borrowed from the following repository:
+The majority of the base code is directly borrowed from the following repository: [ganspace]
 
 [ganspace]: https://github.com/harskish/ganspace
 

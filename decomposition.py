@@ -226,6 +226,9 @@ def compute(config, dump_name, instrumented_model):
     # Decomposition on non-Gaussian latent space
     samples_are_latents = layer_key in ['g_mapping', 'style'] and inst.model.latent_space_name() == 'W'
 
+    # Save sampled latents to a file
+    # np.save("cache/components/LatentSamples.npy", latents, allow_pickle=True, fix_imports=True)
+
     canceled = False
     try:
         X = np.ones((NB, sample_dims), dtype=np.float32)
