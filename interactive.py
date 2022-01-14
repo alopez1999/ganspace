@@ -335,7 +335,7 @@ state = SimpleNamespace(
 
 def save_image_():
     if img is not None:
-        date_string = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M")
+        date_string = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
         wrkdir = str(Path(__file__).parent.resolve())
         save_image(img, wrkdir + '/imgs_out/image-' + date_string + '.png')
     else:
