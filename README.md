@@ -16,6 +16,12 @@ python interactive.py --model=StyleGAN2 --est=kpca --class=car --layer=style -n=
 ```
 In order to change the specific kernel used by the PCA, please go to "estimators.py", line 208
 
+To generate the dataset used to train the autoencoder, uncomment line 230 in "decomposition.py" and run:
+```
+python interactive.py --model=StyleGAN2 --est=ipca --class=ffhq --layer=style --use_w -n=1_000_000 -b=10_000
+```
+To train, go to /autoencoder and run the train.py file. Hyperparameter configuration is set in the first lines of the file. sCheckpoints for normalized and non normalized models are located in the same folder.s
+
 ### StyleGAN
 1. Install TensorFlow: `conda install tensorflow-gpu=1.*`.
 2. Modify methods `__init__()`, `load_model()` in `models/wrappers.py` under class StyleGAN.
